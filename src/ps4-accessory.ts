@@ -1,20 +1,19 @@
-import {callbackify, DeviceInfo, HomebridgeAccessory, Logger, RunningApp} from './utils';
+import {DeviceInfo, RunningApp} from './utils';
 import {DeviceOnOffListener, PS4Device} from './ps4-device';
 import {AppConfig} from './accessory-config';
+import {callbackify, HomebridgeAccessory, Logger} from 'homebridge-base-platform';
 
-export class PS4Accessory extends HomebridgeAccessory implements DeviceOnOffListener {
+export class PS4Accessory extends HomebridgeAccessory<PS4Device> implements DeviceOnOffListener {
 
     public static readonly APP_SERVICE_PREFIX = 'app';
-
-    private readonly device?: PS4Device;
 
     private readonly onService: any;
     private readonly informationService: any;
     private readonly appServices: any[];
 
     constructor(log: Logger, accessory: any, homebridge: any, device: PS4Device) {
-        super(log, accessory, homebridge);
-        this.device = device;
+        super(log, accessory, homebridge, device);
+
         this.informationService = this.initInformationService();
         this.onService = this.initOnService();
         this.appServices = this.initAppServices();
@@ -168,15 +167,12 @@ export class PS4Accessory extends HomebridgeAccessory implements DeviceOnOffList
     }
 
     private _getAllAppServices(serviceType): any[] {
-        if(this.accessory.services === undefined) {
-            return [];
-        }
-        return this.accessory.services.filter((service) => {
+        return this.getServices(serviceType, (service => {
             if(service.subtype === undefined) {
                 return false;
             }
-            return service.UUID === serviceType.UUID && service.subtype.startsWith(PS4Accessory.APP_SERVICE_PREFIX);
-        });
+            return service.subtype.startsWith(PS4Accessory.APP_SERVICE_PREFIX);
+        }));
     }
 
     private _getServiceFromRunningApp(runningApp?: RunningApp): any | undefined {
