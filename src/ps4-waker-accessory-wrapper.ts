@@ -1,9 +1,9 @@
 import {DeviceInfo, RunningApp} from './utils';
 import {DeviceOnOffListener, PS4Device} from './ps4-device';
 import {AppConfig} from './accessory-config';
-import {callbackify, HomebridgeAccessory, Logger} from 'homebridge-base-platform';
+import {callbackify, Context, HomebridgeAccessoryWrapper} from 'homebridge-base-platform';
 
-export class PS4Accessory extends HomebridgeAccessory<PS4Device> implements DeviceOnOffListener {
+export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Device> implements DeviceOnOffListener {
 
     public static readonly APP_SERVICE_PREFIX = 'app';
 
@@ -11,8 +11,8 @@ export class PS4Accessory extends HomebridgeAccessory<PS4Device> implements Devi
     private readonly informationService: any;
     private readonly appServices: any[];
 
-    constructor(log: Logger, accessory: any, homebridge: any, device: PS4Device) {
-        super(log, accessory, homebridge, device);
+    constructor(context: Context, accessory: any, device: PS4Device) {
+        super(context, accessory, device);
 
         this.informationService = this.initInformationService();
         this.onService = this.initOnService();
@@ -21,35 +21,29 @@ export class PS4Accessory extends HomebridgeAccessory<PS4Device> implements Devi
     }
 
     private initOnService(): any {
-        const Service = this.homebridge.hap.Service;
-        const Characteristic = this.homebridge.hap.Characteristic;
-        const onService = this.getService(Service.Switch, this.getDisplayName(), 'onService');
+        const onService = this.getService(this.Service.Switch, this.getDisplayName(), 'onService');
         onService
-            .getCharacteristic(Characteristic.On)
+            .getCharacteristic(this.Characteristic.On)
             .on('get', callbackify(this.isOn.bind(this)))
             .on('set', callbackify(this.setOn.bind(this)));
         return onService;
     }
 
     private initInformationService(): any {
-        const Service = this.homebridge.hap.Service;
-        const Characteristic = this.homebridge.hap.Characteristic;
-        const informationService = this.accessory.getService(Service.AccessoryInformation);
+        const informationService = this.accessory.getService(this.Service.AccessoryInformation);
         informationService
-            .setCharacteristic(Characteristic.Name, this.getDisplayName())
-            .setCharacteristic(Characteristic.Manufacturer, 'Sony Corporation')
-            .setCharacteristic(Characteristic.Model, this.device.model)
-            .setCharacteristic(Characteristic.SerialNumber, this.device.serial);
+            .setCharacteristic(this.Characteristic.Name, this.getDisplayName())
+            .setCharacteristic(this.Characteristic.Manufacturer, 'Sony Corporation')
+            .setCharacteristic(this.Characteristic.Model, this.device.model)
+            .setCharacteristic(this.Characteristic.SerialNumber, this.device.serial);
         if(this.device.info.systemVersion) {
-            informationService.setCharacteristic(Characteristic.FirmwareRevision, this.device.info.systemVersion);
+            informationService.setCharacteristic(this.Characteristic.FirmwareRevision, this.device.info.systemVersion);
         }
         return informationService;
     }
 
     private initAppServices() {
-        const Service = this.homebridge.hap.Service;
-        const Characteristic = this.homebridge.hap.Characteristic;
-        const allAppsRegistered = this._getAllAppServices(Service.Switch);
+        const allAppsRegistered = this._getAllAppServices(this.Service.Switch);
         const newServices = this.device.apps.map((config) => {
             const serviceType = _appIdToServiceType(config.id);
             const oldServiceIndex = allAppsRegistered.findIndex((service) => {
@@ -58,13 +52,13 @@ export class PS4Accessory extends HomebridgeAccessory<PS4Device> implements Devi
             if(oldServiceIndex !== -1) {
                 allAppsRegistered.splice(oldServiceIndex, 1);
             }
-            const appService = this.getService(Service.Switch, config.name, serviceType);
-            const characteristic = appService.getCharacteristic(Characteristic.On);
+            const appService = this.getService(this.Service.Switch, config.name, serviceType);
+            const characteristic = appService.getCharacteristic(this.Characteristic.On);
             characteristic.on('get', callbackify(() => this.isRunningApp(config)));
             characteristic.on('set', callbackify((on: boolean) => this.setRunningApp(on, config)));
             return appService;
         });
-        allAppsRegistered.forEach((service) => this.removeService(Service.Switch, service.subtype));
+        allAppsRegistered.forEach((service) => this.removeService(this.Service.Switch, service.subtype));
         return newServices;
     }
 
@@ -135,8 +129,7 @@ export class PS4Accessory extends HomebridgeAccessory<PS4Device> implements Devi
                 const appService = this._getServiceFromRunningApp(runningApp);
                 await this.device.api.turnOff();
                 if(appService !== undefined) {
-                    const Characteristic = this.homebridge.hap.Characteristic;
-                    appService.getCharacteristic(Characteristic.On).updateValue(false);
+                    appService.getCharacteristic(this.Characteristic.On).updateValue(false);
                 }
                 success = await this.deviceDidTurnOff();
             }
@@ -149,19 +142,17 @@ export class PS4Accessory extends HomebridgeAccessory<PS4Device> implements Devi
     }
 
     deviceDidTurnOff(updateOn?: boolean): Promise<boolean> {
-        const Characteristic = this.homebridge.hap.Characteristic;
         this.log(`[${this.getDisplayName()}] Turn off`);
         if(updateOn === true) {
-            this.onService.getCharacteristic(Characteristic.On).updateValue(false);
+            this.onService.getCharacteristic(this.Characteristic.On).updateValue(false);
         }
         return Promise.resolve(true);
     }
 
     deviceDidTurnOn(updateOn?: boolean): Promise<boolean> {
-        const Characteristic = this.homebridge.hap.Characteristic;
         this.log(`[${this.getDisplayName()}] Turn on`);
         if(updateOn === true) {
-            this.onService.getCharacteristic(Characteristic.On).updateValue(true);
+            this.onService.getCharacteristic(this.Characteristic.On).updateValue(true);
         }
         return Promise.resolve(true);
     }
@@ -171,20 +162,19 @@ export class PS4Accessory extends HomebridgeAccessory<PS4Device> implements Devi
             if(service.subtype === undefined) {
                 return false;
             }
-            return service.subtype.startsWith(PS4Accessory.APP_SERVICE_PREFIX);
+            return service.subtype.startsWith(PS4WakerAccessoryWrapper.APP_SERVICE_PREFIX);
         }));
     }
 
     private _getServiceFromRunningApp(runningApp?: RunningApp): any | undefined {
         if(runningApp !== undefined) {
-            const Service = this.homebridge.hap.Service;
             const serviceType = _appIdToServiceType(runningApp.id);
-            return this.accessory.getServiceByUUIDAndSubType(Service.Switch, serviceType);
+            return this.accessory.getServiceByUUIDAndSubType(this.Service.Switch, serviceType);
         }
         return undefined;
     }
 }
 
 function _appIdToServiceType(id: string): string {
-    return `${PS4Accessory.APP_SERVICE_PREFIX}${id}Service`;
+    return `${PS4WakerAccessoryWrapper.APP_SERVICE_PREFIX}${id}Service`;
 }

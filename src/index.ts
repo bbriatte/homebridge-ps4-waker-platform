@@ -1,5 +1,5 @@
-import {PS4Platform, HomebridgeInfo} from './ps4-platform';
+import {PS4WakerPlatformInfo, PS4WakerPlatform} from './ps4-waker-platform';
 
 export default function(homebridge: any) {
-    homebridge.registerPlatform(HomebridgeInfo.plugin, HomebridgeInfo.name, PS4Platform, true);
+    homebridge.registerPlatform(PS4WakerPlatformInfo.plugin, PS4WakerPlatformInfo.name, PS4WakerPlatform, true);
 }

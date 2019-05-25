@@ -2,7 +2,17 @@ import {AccessoryConfig, AppConfig, GlobalConfig} from './accessory-config';
 import {Detector, Device} from 'ps4-waker';
 import {ConnectionInfo, DeviceInfo} from './utils';
 
-export interface PS4Device {
+export interface IPS4Device {
+    readonly api: Device;
+    readonly connectionInfo: ConnectionInfo;
+    readonly apps: AppConfig[];
+    readonly serial: string;
+    readonly model: string;
+    readonly timeout: number;
+    readonly info: DeviceInfo;
+}
+
+export class PS4Device implements IPS4Device {
     readonly api: Device;
     readonly connectionInfo: ConnectionInfo;
     readonly apps: AppConfig[];
@@ -10,6 +20,24 @@ export interface PS4Device {
     readonly model: string;
     readonly timeout: number;
     info: DeviceInfo;
+
+    constructor(device: IPS4Device) {
+        this.api = device.api;
+        this.connectionInfo = device.connectionInfo;
+        this.apps = device.apps;
+        this.serial = device.serial;
+        this.model = device.model;
+        this.timeout = device.timeout;
+        this.info = device.info;
+    }
+
+    get name(): string {
+        return this.info.host.name;
+    }
+
+    get id(): string {
+        return this.info.host.id;
+    }
 }
 
 export interface DeviceOnOffListener {
@@ -42,7 +70,7 @@ function _createDevice(accessoryConfig: AccessoryConfig, globalConfig: GlobalCon
     });
     api.lastInfo = deviceInfoRaw;
     api.lastInfo.address = connectionInfo.address;
-    return {
+    return new PS4Device({
         api: api,
         info: new DeviceInfo(deviceInfoRaw),
         connectionInfo: connectionInfo,
@@ -50,7 +78,7 @@ function _createDevice(accessoryConfig: AccessoryConfig, globalConfig: GlobalCon
         serial: accessoryConfig.serial,
         model: accessoryConfig.model,
         timeout: accessoryConfig.timeout || globalConfig.timeout || 5000
-    }
+    });
 }
 
 function _mergeAppConfigs(accessoryApps?: AppConfig[], globalApps?: AppConfig[]): AppConfig[] {
