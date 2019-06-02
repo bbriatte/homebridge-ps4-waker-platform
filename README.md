@@ -16,7 +16,7 @@ Example `config.json` with one PS4 accessories
 
 ```json
 {
-    "platform": Ps4WakerPlatform,
+    "platform": "PS4WakerPlatform",
     "name": "PS4Waker",
     "accessories": [
       {
@@ -31,7 +31,7 @@ Example `config.json` to register 2 PS4
 
 ```json
 {
-    "platform": PPs4WakerPlatform
+    "platform": "PS4WakerPlatform",
     "name": "PS4Waker",
     "accessories": [
         {
@@ -57,7 +57,8 @@ Example `config.json` for one PS4 and 2 apps:
 
 ```json
 {
-    "platform": Ps4Ps4WakerPlatform   "name": "PS4Waker",
+    "platform": "PS4WakerPlatform",
+    "name": "PS4Waker",
     "accessories": [
         {
             "serial": "XXXXXXXXXXX",
@@ -79,7 +80,8 @@ Example `config.json` for one PS4 and 2 apps:
 
 ### Platform element
 *Required fields*
-* `platform`: Must always be **PS4WPs4WakerPlatform* `name`: The name you want to use to control the PS4 platform.
+* `platform`: Must always be **PS4WakerPlatform**
+* `name`: The name you want to use to control the PS4 platform.
 
 *Optional fields*
 * `accessories`: Array of **Accessory element**
@@ -87,7 +89,7 @@ Example `config.json` for one PS4 and 2 apps:
 
 ### Accessory element
 *Required fields*
-* `serial`: The serial number of your PS4 
+* `serial`: The serial number of your PS4
 * `model`: The model name of your PS4
 
 *Optional fields*
