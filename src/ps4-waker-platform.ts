@@ -19,11 +19,15 @@ export class PS4WakerPlatform extends HomebridgePlatform<PS4PlatformConfig, PS4D
         return {
             plugin: PS4WakerPlatformInfo.plugin,
             name: PS4WakerPlatformInfo.name,
-            deviceKeys: {
+            deviceKeyMapping: {
                 id: 'id',
                 name: 'name'
             }
         };
+    }
+
+    protected getDefaultPlatformConfig(): PS4PlatformConfig | undefined {
+        return undefined; // Default platform plugin not possible
     }
 
     protected async searchDevices(): Promise<PS4Device[]> {
