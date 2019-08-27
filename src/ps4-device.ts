@@ -7,6 +7,7 @@ export interface IPS4Device {
     readonly connectionInfo: ConnectionInfo;
     readonly apps: AppConfig[];
     readonly serial: string;
+    readonly name: string;
     readonly model: string;
     readonly timeout: number;
     readonly info: DeviceInfo;
@@ -16,6 +17,7 @@ export class PS4Device implements IPS4Device {
     readonly api: Device;
     readonly connectionInfo: ConnectionInfo;
     readonly apps: AppConfig[];
+    readonly name: string;
     readonly serial: string;
     readonly model: string;
     readonly timeout: number;
@@ -26,13 +28,10 @@ export class PS4Device implements IPS4Device {
         this.connectionInfo = device.connectionInfo;
         this.apps = device.apps;
         this.serial = device.serial;
+        this.name = device.name;
         this.model = device.model;
         this.timeout = device.timeout;
         this.info = device.info;
-    }
-
-    get name(): string {
-        return this.info.host.name;
     }
 
     get id(): string {
@@ -76,6 +75,7 @@ function _createDevice(accessoryConfig: AccessoryConfig, globalConfig: GlobalCon
         connectionInfo: connectionInfo,
         apps: _mergeAppConfigs(accessoryConfig.apps, globalConfig.apps),
         serial: accessoryConfig.serial,
+        name: accessoryConfig.name || connectionInfo.host.name,
         model: accessoryConfig.model,
         timeout: accessoryConfig.timeout || globalConfig.timeout || 5000
     });
