@@ -69,13 +69,14 @@ function _createDevice(accessoryConfig: AccessoryConfig, globalConfig: GlobalCon
     });
     api.lastInfo = deviceInfoRaw;
     api.lastInfo.address = connectionInfo.address;
+    const deviceInfo = new DeviceInfo(deviceInfoRaw);
     return new PS4Device({
         api: api,
-        info: new DeviceInfo(deviceInfoRaw),
+        info: deviceInfo,
         connectionInfo: connectionInfo,
         apps: _mergeAppConfigs(accessoryConfig.apps, globalConfig.apps),
         serial: accessoryConfig.serial,
-        name: accessoryConfig.name || connectionInfo.host.name,
+        name: accessoryConfig.name || deviceInfo.host.name,
         model: accessoryConfig.model,
         timeout: accessoryConfig.timeout || globalConfig.timeout || 5000
     });
