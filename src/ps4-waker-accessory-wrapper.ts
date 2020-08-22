@@ -13,16 +13,17 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
     private readonly informationService: any;
     private readonly appServices: any[];
 
+    private loggingService: any;
+
     constructor(context: Context, accessory: any, device: PS4Device) {
         super(context, accessory, device);
 
-        var FakeGatoHistoryService = require('fakegato-history')(this.Homebridge);
+        var FakeGatoHistoryService = require('fakegato-history')(this.homebridge);
 
         this.informationService = this.initInformationService();
         this.onService = this.initOnService();
         this.appServices = this.initAppServices();
         
-        this.log = log;
         this.loggingService = new FakeGatoHistoryService('switch', accessory);
 
         this.log(`Found device [${this.getDisplayName()}]`);
