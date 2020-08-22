@@ -3,6 +3,8 @@ import {DeviceOnOffListener, PS4Device} from './ps4-device';
 import {AppConfig} from './accessory-config';
 import {callbackify, Context, HomebridgeAccessoryWrapper} from 'homebridge-base-platform';
 
+const moment = require('moment');
+
 export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Device> implements DeviceOnOffListener {
 
     public static readonly APP_SERVICE_PREFIX = 'app';
@@ -11,12 +13,19 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
     private readonly informationService: any;
     private readonly appServices: any[];
 
+    private loggingService: any;
+
     constructor(context: Context, accessory: any, device: PS4Device) {
         super(context, accessory, device);
+
+        var FakeGatoHistoryService = require('fakegato-history')(this.homebridge);
 
         this.informationService = this.initInformationService();
         this.onService = this.initOnService();
         this.appServices = this.initAppServices();
+        
+        this.loggingService = new FakeGatoHistoryService('switch', accessory);
+
         this.log(`Found device [${this.getDisplayName()}]`);
     }
 
@@ -112,6 +121,9 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
     public async isOn(): Promise<boolean> {
         const deviceInfoRaw = await this.device.api.getDeviceStatus();
         this.device.info = new DeviceInfo(deviceInfoRaw);
+
+        var _isOn = this.device.info.status.code === 200;
+        this.loggingService.addEntry({time: moment().unix(), status: _isOn});
         return this.device.info.status.code === 200;
     }
 
