@@ -1,17 +1,18 @@
 import {DeviceInfo, RunningApp} from './utils';
 import {DeviceOnOffListener, PS4Device} from './ps4-device';
 import {AppConfig} from './accessory-config';
-import {callbackify, Context, HomebridgeAccessoryWrapper} from 'homebridge-base-platform';
+import {callbackify, HomebridgeContextProps, HomebridgeAccessoryWrapper} from 'homebridge-base-platform';
+import {PlatformAccessory, Service} from "homebridge";
 
 export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Device> implements DeviceOnOffListener {
 
     public static readonly APP_SERVICE_PREFIX = 'app';
 
-    private readonly onService: any;
-    private readonly informationService: any;
-    private readonly appServices: any[];
+    private readonly onService: Service;
+    private readonly informationService: Service;
+    private readonly appServices: Service[];
 
-    constructor(context: Context, accessory: any, device: PS4Device) {
+    constructor(context: HomebridgeContextProps, accessory: PlatformAccessory, device: PS4Device) {
         super(context, accessory, device);
 
         this.informationService = this.initInformationService();
@@ -20,7 +21,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
         this.log(`Found device [${this.getDisplayName()}]`);
     }
 
-    private initOnService(): any {
+    private initOnService(): Service {
         const onService = this.getService(this.Service.Switch, this.getDisplayName(), 'onService');
         onService
             .getCharacteristic(this.Characteristic.On)
@@ -29,7 +30,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
         return onService;
     }
 
-    private initInformationService(): any {
+    private initInformationService(): Service {
         const informationService = this.accessory.getService(this.Service.AccessoryInformation);
         informationService
             .setCharacteristic(this.Characteristic.Name, this.getDisplayName())
@@ -42,7 +43,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
         return informationService;
     }
 
-    private initAppServices() {
+    private initAppServices(): Service[] {
         const allAppsRegistered = this._getAllAppServices(this.Service.Switch);
         const newServices = this.device.apps.map((config) => {
             const serviceType = _appIdToServiceType(config.id);
@@ -157,7 +158,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
         return Promise.resolve(true);
     }
 
-    private _getAllAppServices(serviceType): any[] {
+    private _getAllAppServices(serviceType): Service[] {
         return this.getServices(serviceType, (service => {
             if(service.subtype === undefined) {
                 return false;
@@ -166,7 +167,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
         }));
     }
 
-    private _getServiceFromRunningApp(runningApp?: RunningApp): any | undefined {
+    private _getServiceFromRunningApp(runningApp?: RunningApp): Service | undefined {
         if(runningApp !== undefined) {
             const serviceType = _appIdToServiceType(runningApp.id);
             return this.accessory.getServiceByUUIDAndSubType(this.Service.Switch, serviceType);
