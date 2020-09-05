@@ -12,7 +12,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/bbriatte/homebridge-ps4-waker.git"
+    "url": "git://github.com/bbriatte/homebridge-ps4-waker-platform.git"
   },
   "engines": {
     "homebridge": ">=1.0.0"
