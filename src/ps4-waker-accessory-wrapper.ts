@@ -1,5 +1,5 @@
 import {DeviceInfo, RunningApp} from './utils';
-import {DeviceOnOffListener, PS4Device} from './ps4-device';
+import {deviceIsOn, DeviceOnOffListener, PS4Device} from './ps4-device';
 import {AppConfig} from './accessory-config';
 import {callbackify, HomebridgeContextProps, HomebridgeAccessoryWrapper} from 'homebridge-base-platform';
 import {PlatformAccessory, Service} from "homebridge";
@@ -18,14 +18,25 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
         this.informationService = this.initInformationService();
         this.onService = this.initOnService();
         this.appServices = this.initAppServices();
-        this.log(`Found device [${this.getDisplayName()}]`);
+        if(this.device.verbose === true) {
+            this.log(`[${this.getDisplayName()}] Device ready`);
+        }
+        if(this.device.pollingInterval !== undefined) {
+            this._refreshDeviceServices().then(() => this.log('Infinite loop'));
+        }
     }
 
     private initOnService(): Service {
         const onService = this.getService(this.Service.Switch, this.getDisplayName(), 'onService');
         onService
             .getCharacteristic(this.Characteristic.On)
-            .on('get', callbackify(this.isOn.bind(this)))
+            .on('get', callbackify(async () => {
+                const isOn = await deviceIsOn(this.device);
+                if(this.device.verbose) {
+                    this.log(`[${this.getDisplayName()}] ${isOn ? 'Is on' : 'Is off'}`);
+                }
+                return isOn;
+            }))
             .on('set', callbackify(this.setOn.bind(this)));
         return onService;
     }
@@ -80,14 +91,16 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
     private async setRunningApp(on: boolean, config: AppConfig): Promise<boolean> {
         try {
             let success = false;
-            const deviceOn = await this.isOn();
+            const deviceOn = await deviceIsOn(this.device);
             if (on) {
                 await this.device.api.startTitle(config.id);
                 success = true;
                 if(deviceOn === false) {
                     success = await this.deviceDidTurnOn(true);
                 }
-                this.log(`[${this.getDisplayName()}] Start ${config.name}`);
+                if(this.device.verbose) {
+                    this.log(`[${this.getDisplayName()}] Start ${config.name}`);
+                }
             } else if(deviceOn === true) {
                 const runningApp = this.device.info.runningApp;
                 if(runningApp !== undefined && runningApp.id === config.id) {
@@ -98,7 +111,9 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
                     await this.device.api.sendKeys(['enter']);
                     await new Promise((resolve => setTimeout(resolve, 1000)));
                     await this.device.api.sendKeys(['enter']);
-                    this.log(`[${this.getDisplayName()}] Stop ${config.name}`);
+                    if(this.device.verbose) {
+                        this.log(`[${this.getDisplayName()}] Stop ${config.name}`);
+                    }
                     success = true;
                 }
             }
@@ -108,12 +123,6 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
             this.log.error(err);
             return false;
         }
-    }
-
-    public async isOn(): Promise<boolean> {
-        const deviceInfoRaw = await this.device.api.getDeviceStatus();
-        this.device.info = new DeviceInfo(deviceInfoRaw);
-        return this.device.info.status.code === 200;
     }
 
     public async setOn(on: boolean): Promise<boolean> {
@@ -143,7 +152,9 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
     }
 
     deviceDidTurnOff(updateOn?: boolean): Promise<boolean> {
-        this.log(`[${this.getDisplayName()}] Turn off`);
+        if(this.device.verbose) {
+            this.log(`[${this.getDisplayName()}] Turn off`);
+        }
         if(updateOn === true) {
             this.onService.getCharacteristic(this.Characteristic.On).updateValue(false);
         }
@@ -151,7 +162,9 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
     }
 
     deviceDidTurnOn(updateOn?: boolean): Promise<boolean> {
-        this.log(`[${this.getDisplayName()}] Turn on`);
+        if(this.device.verbose) {
+            this.log(`[${this.getDisplayName()}] Turn on`);
+        }
         if(updateOn === true) {
             this.onService.getCharacteristic(this.Characteristic.On).updateValue(true);
         }
@@ -173,6 +186,27 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
             return this.accessory.getServiceByUUIDAndSubType(this.Service.Switch, serviceType);
         }
         return undefined;
+    }
+
+    private async _refreshDeviceServices(): Promise<void> {
+        await new Promise(((resolve) => setTimeout(resolve, this.device.pollingInterval)));
+        const runningApp = await this.getRunningApp();
+        const onCharacteristic = this.onService.getCharacteristic(this.Characteristic.On);
+        if(this.device.info.status.code === 200) {
+            onCharacteristic.updateValue(true);
+            if(runningApp) {
+                const runningServiceType = _appIdToServiceType(runningApp.id);
+                this.appServices.forEach((service) => {
+                    service.getCharacteristic(this.Characteristic.On).updateValue(service.subtype === runningServiceType);
+                });
+            }
+        } else {
+            onCharacteristic.updateValue(false);
+        }
+        if(!runningApp) {
+            this.appServices.forEach((service) => service.getCharacteristic(this.Characteristic.On).updateValue(false));
+        }
+        return this._refreshDeviceServices();
     }
 }
 

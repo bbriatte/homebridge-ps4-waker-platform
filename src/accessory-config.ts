@@ -1,5 +1,8 @@
-export interface GlobalConfig {
+import {BaseGlobalConfig} from "homebridge-base-platform";
+
+export interface GlobalConfig extends BaseGlobalConfig {
     readonly apps?: AppConfig[];
+    readonly pollingInterval?: number;
     timeout?: number;
 }
 

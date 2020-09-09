@@ -3,7 +3,6 @@ import {AccessoryConfig, GlobalConfig} from './accessory-config';
 import {deviceFromConfig, PS4Device} from './ps4-device';
 import {PS4WakerAccessoryWrapper} from './ps4-waker-accessory-wrapper';
 import {
-    DefaultDeviceKeyMapping,
     HomebridgeAccessoryWrapperConstructor,
     HomebridgePlatform,
     PlatformSettings
@@ -28,8 +27,7 @@ export class PS4WakerPlatform extends HomebridgePlatform<PS4PlatformConfig, PS4D
     protected initPlatformSettings(): PlatformSettings {
         return {
             plugin: PS4WakerPlatformInfo.plugin,
-            name: PS4WakerPlatformInfo.name,
-            deviceKeyMapping: DefaultDeviceKeyMapping
+            name: PS4WakerPlatformInfo.name
         };
     }
 
@@ -40,6 +38,6 @@ export class PS4WakerPlatform extends HomebridgePlatform<PS4PlatformConfig, PS4D
     protected async searchDevices(): Promise<PS4Device[]> {
         const accessoryConfigs: AccessoryConfig[] = this.config.accessories || [];
         const globalConfig: GlobalConfig = this.config.global || {};
-        return Promise.all(accessoryConfigs.map((ac) => deviceFromConfig(ac, globalConfig)));
+        return Promise.all(accessoryConfigs.map((ac) => deviceFromConfig(ac, globalConfig, this.log)));
     }
 }

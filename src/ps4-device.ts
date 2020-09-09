@@ -1,6 +1,8 @@
 import {AccessoryConfig, AppConfig, GlobalConfig} from './accessory-config';
 import {Detector, Device} from 'ps4-waker';
 import {ConnectionInfo, DeviceInfo} from './utils';
+import {isVerboseInConfigs, BaseDevice} from "homebridge-base-platform";
+import {Logging} from "homebridge";
 
 export interface IPS4Device {
     readonly api: Device;
@@ -10,15 +12,19 @@ export interface IPS4Device {
     readonly model: string;
     readonly timeout: number;
     readonly info: DeviceInfo;
+    readonly verbose: boolean;
+    readonly pollingInterval?: number;
 }
 
-export class PS4Device implements IPS4Device {
+export class PS4Device implements IPS4Device, BaseDevice {
     readonly api: Device;
     readonly connectionInfo: ConnectionInfo;
     readonly apps: AppConfig[];
     readonly serial: string;
     readonly model: string;
     readonly timeout: number;
+    readonly verbose: boolean;
+    readonly pollingInterval?: number;
     info: DeviceInfo;
 
     constructor(device: IPS4Device) {
@@ -29,6 +35,8 @@ export class PS4Device implements IPS4Device {
         this.model = device.model;
         this.timeout = device.timeout;
         this.info = device.info;
+        this.verbose = device.verbose;
+        this.pollingInterval = device.pollingInterval;
     }
 
     get name(): string {
@@ -45,7 +53,7 @@ export interface DeviceOnOffListener {
     deviceDidTurnOn(updateOn?: boolean): Promise<boolean>;
 }
 
-export async function deviceFromConfig(accessoryConfig: AccessoryConfig, globalConfig: GlobalConfig): Promise<PS4Device> {
+export async function deviceFromConfig(accessoryConfig: AccessoryConfig, globalConfig: GlobalConfig, log: Logging): Promise<PS4Device> {
     return new Promise((resolve, reject) => {
         Detector.findWhen((deviceInfoRaw: any, connectionInfo: ConnectionInfo) => {
             return accessoryConfig.ip === undefined || connectionInfo.address === accessoryConfig.ip
@@ -56,12 +64,12 @@ export async function deviceFromConfig(accessoryConfig: AccessoryConfig, globalC
                 reject(err);
                 return;
             }
-            resolve(_createDevice(accessoryConfig, globalConfig, deviceInfoRaw, connectionInfo));
+            resolve(_createDevice(accessoryConfig, globalConfig, deviceInfoRaw, connectionInfo, log));
         });
     });
 }
 
-function _createDevice(accessoryConfig: AccessoryConfig, globalConfig: GlobalConfig, deviceInfoRaw: any, connectionInfo: ConnectionInfo): PS4Device {
+function _createDevice(accessoryConfig: AccessoryConfig, globalConfig: GlobalConfig, deviceInfoRaw: any, connectionInfo: ConnectionInfo, log: Logging): PS4Device {
     const api = new Device({
         address: connectionInfo.address,
         autoLogin: true,
@@ -70,15 +78,23 @@ function _createDevice(accessoryConfig: AccessoryConfig, globalConfig: GlobalCon
     });
     api.lastInfo = deviceInfoRaw;
     api.lastInfo.address = connectionInfo.address;
-    return new PS4Device({
+    const isVerbose = isVerboseInConfigs(globalConfig, accessoryConfig);
+    const pollingInterval = accessoryConfig.pollingInterval || globalConfig.pollingInterval;
+    const ps4 = new PS4Device({
         api: api,
         info: new DeviceInfo(deviceInfoRaw),
         connectionInfo: connectionInfo,
         apps: _mergeAppConfigs(accessoryConfig.apps, globalConfig.apps),
         serial: accessoryConfig.serial,
         model: accessoryConfig.model,
-        timeout: accessoryConfig.timeout || globalConfig.timeout || 5000
+        timeout: accessoryConfig.timeout || globalConfig.timeout || 5000,
+        verbose: isVerbose,
+        pollingInterval: pollingInterval
     });
+    if(isVerbose) {
+        log(`[${ps4.name}] Found device`);
+    }
+    return ps4;
 }
 
 function _mergeAppConfigs(accessoryApps?: AppConfig[], globalApps?: AppConfig[]): AppConfig[] {
@@ -101,4 +117,10 @@ function _mergeAppConfigs(accessoryApps?: AppConfig[], globalApps?: AppConfig[])
     setGames(res, globalApps);
     setGames(res, accessoryApps);
     return res;
+}
+
+export async function deviceIsOn(device: PS4Device): Promise<boolean> {
+    const deviceInfoRaw = await device.api.getDeviceStatus();
+    device.info = new DeviceInfo(deviceInfoRaw);
+    return device.info.status.code === 200;
 }
