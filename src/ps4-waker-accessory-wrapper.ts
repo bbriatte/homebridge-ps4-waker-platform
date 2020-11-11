@@ -27,7 +27,6 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
 
         this.historyService = new this.FakeGatoHistoryService('switch', accessory, {  
           storage: "fs",  
-          minutes: 10,
           log: this.context.log
         });
 
@@ -50,7 +49,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
                     this.log(`[${this.getDisplayName()}] ${isOn ? 'Is on' : 'Is off'}`);
                 }
                 this.historyService.addEntry({   
-                  time: Date.now(),   
+                  time: Math.round(new Date().valueOf() / 1000),   
                   temp: isOn   
                 })
                 return isOn;
