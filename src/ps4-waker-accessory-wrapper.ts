@@ -26,8 +26,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
         this.FakeGatoHistoryService = fakegato(this.context.api);
 
         this.historyService = new this.FakeGatoHistoryService('switch', accessory, {  
-          storage: "fs",  
-          path: "./fakegato/"
+          storage: "fs",            
           log: this.context.log
         });
 
