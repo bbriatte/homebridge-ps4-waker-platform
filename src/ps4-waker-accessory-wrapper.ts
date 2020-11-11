@@ -50,7 +50,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
                 }
                 this.historyService.addEntry({   
                   time: Math.round(new Date().valueOf() / 1000),   
-                  temp: isOn   
+                  status: isOn   
                 })
                 return isOn;
             }))
