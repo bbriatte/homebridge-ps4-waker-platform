@@ -2,9 +2,13 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
+    "declaration": true,
+    "declarationMap": true,
     "sourceMap": true,
     "outDir": "dist",
     "moduleResolution": "node",
+    "esModuleInterop": true,
+    "preserveConstEnums": true,
     "lib": [
       "es2015"
     ]

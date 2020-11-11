@@ -1,9 +1,12 @@
 {
   "name": "homebridge-ps4-waker-platform",
-  "version": "1.0.4",
+  "version": "1.4.0",
   "description": "Homebridge PS4 platform to wake your PS4 over LAN and run apps",
   "main": "dist/index.js",
   "types": "dist/index.d.js",
+  "scripts": {
+    "build": "tsc"
+  },
   "keywords": [
     "homebridge-plugin",
     "ps4",
@@ -12,21 +15,20 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/An00bIS47/homebridge-ps4-waker-platform.git"
+    "url": "https://github.com/An00bIS47/homebridge-ps4-waker-platform.git"
   },
   "engines": {
-    "homebridge": ">=0.4.48"
+    "homebridge": ">=1.0.0"
   },
-  "author": "bbriatte",
+  "author": "An00bIS47",
   "license": "BSD",
   "dependencies": {
-    "fakegato-history": ">=0.5.6",
-    "homebridge-base-platform": "^1.2.0",
-    "moment": ">=2.24.0",
-    "ps4-waker": "^1.9.0"
+    "homebridge-base-platform": "^1.4.2",
+    "ps4-waker": "^1.10.1",
+    "fakegato-history": "^0.6.0"
   },
   "devDependencies": {
-    "@types/node": "^12.0.4",
-    "homebridge": "^0.4.49"
+    "@types/node": "^14.6.4",
+    "homebridge": "^1.1.6"
   }
 }

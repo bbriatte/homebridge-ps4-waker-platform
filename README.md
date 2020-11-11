@@ -1,6 +1,7 @@
 # homebridge-ps4-waker-platform
 
 [![npm version](https://badge.fury.io/js/homebridge-ps4-waker-platform.svg)](https://badge.fury.io/js/homebridge-ps4-waker-platform)
+[![npm downloads](https://badgen.net/npm/dt/homebridge-ps4-waker-platform)](https://badgen.net/npm/dt/homebridge-ps4-waker-platform)
 
 [PS4 Waker](https://github.com/dhleong/ps4-waker) plugin for [Homebridge](https://github.com/nfarina/homebridge)
 
@@ -97,11 +98,15 @@ Example `config.json` for one PS4 and 2 apps:
 * `ip`: Specific IP of your PS4, use this option when multiple PS4 are reachable on your network.
 * `passCode`: The pass code to connect to your PS4 if necessary.
 * `credentials`: The file path to the credentials.json **see [Documentation](https://github.com/dhleong/ps4-waker/wiki)**
+* `verbose`: Log all device information
+* `pollingInterval`: If set, poll the device each interval
 * `apps`: Contains all apps action that you want to trigger using HomeKit on your device. Adds a switch for each app with the given name. see **App element**
 * `timeout`: Timeout to access to your PS4. **Default: 5000ms**
 
 ### Global element
 *Optional fields*
+* `verbose`: Log all device information
+* `pollingInterval`: If set, poll the device each interval
 * `apps`: Contains all apps action that you want to trigger using HomeKit on all PS4 device. Adds a switch for each app with the given name. see **App element**
 * `timeout`: Timeout to access all PS4 on your network. **Default: 5000ms**
 
