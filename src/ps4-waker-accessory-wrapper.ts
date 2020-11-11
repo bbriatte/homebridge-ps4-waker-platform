@@ -14,7 +14,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
     private readonly appServices: Service[];
 
     private historyService;
-
+    private FakeGatoHistoryService;
 
     constructor(context: HomebridgeContextProps, accessory: PlatformAccessory, device: PS4Device) {
         super(context, accessory, device);
@@ -23,7 +23,7 @@ export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Devi
         this.onService = this.initOnService();
         this.appServices = this.initAppServices();
 
-        const FakeGatoHistoryService = fakegato(this.context.api);
+        this.FakeGatoHistoryService = fakegato(this.context.api);
 
         this.historyService = new FakeGatoHistoryService('switch', accessory, {  
           storage: "fs",  
