@@ -3,7 +3,7 @@ import {deviceIsOn, DeviceOnOffListener, PS4Device} from './ps4-device';
 import {AppConfig} from './accessory-config';
 import {callbackify, HomebridgeContextProps, HomebridgeAccessoryWrapper} from 'homebridge-base-platform';
 import {PlatformAccessory, Service} from "homebridge";
-import {fakegato} from 'fakegato-history';
+import fakegato from 'fakegato-history';
 
 export class PS4WakerAccessoryWrapper extends HomebridgeAccessoryWrapper<PS4Device> implements DeviceOnOffListener {
 
