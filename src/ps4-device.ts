@@ -58,6 +58,7 @@ export async function deviceFromConfig(accessoryConfig: AccessoryConfig, globalC
         Detector.findWhen((deviceInfoRaw: any, connectionInfo: ConnectionInfo) => {
             return accessoryConfig.ip === undefined || connectionInfo.address === accessoryConfig.ip
         }, {
+            bindAddress: accessoryConfig.bindAddress || globalConfig.bindAddress,
             timeout: accessoryConfig.timeout || globalConfig.timeout || 5000
         }, (err, deviceInfoRaw: any, connectionInfo: ConnectionInfo) => {
             if(err) {
@@ -74,7 +75,8 @@ function _createDevice(accessoryConfig: AccessoryConfig, globalConfig: GlobalCon
         address: connectionInfo.address,
         autoLogin: true,
         credentials: accessoryConfig.credentials,
-        passCode: accessoryConfig.passCode
+        passCode: accessoryConfig.passCode,
+        bindAddress: accessoryConfig.bindAddress || globalConfig.bindAddress,
     });
     api.lastInfo = deviceInfoRaw;
     api.lastInfo.address = connectionInfo.address;

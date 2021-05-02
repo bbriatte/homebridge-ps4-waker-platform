@@ -102,6 +102,7 @@ Example `config.json` for one PS4 and 2 apps:
 * `pollingInterval`: If set, poll the device each interval
 * `apps`: Contains all apps action that you want to trigger using HomeKit on your device. Adds a switch for each app with the given name. see **App element**
 * `timeout`: Timeout to access to your PS4. **Default: 5000ms**
+* `bindAddress`: IP to bind to if your host has multiple network interfaces
 
 ### Global element
 *Optional fields*
@@ -109,6 +110,7 @@ Example `config.json` for one PS4 and 2 apps:
 * `pollingInterval`: If set, poll the device each interval
 * `apps`: Contains all apps action that you want to trigger using HomeKit on all PS4 device. Adds a switch for each app with the given name. see **App element**
 * `timeout`: Timeout to access all PS4 on your network. **Default: 5000ms**
+* `bindAddress`: IP to bind to if your host has multiple network interfaces
 
  ### App element
  *Required fields*
