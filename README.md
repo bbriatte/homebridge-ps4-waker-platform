@@ -39,7 +39,7 @@ Example `config.json` to register 2 PS4
             "serial": "XXXXXXXXXXX",
             "model": "CUH-7016B",
             "ip": "192.168.0.20",
-            "credentials": ".ps4-pro-wake.credentials.json"  
+            "credentials": ".ps4-pro-wake.credentials.json"
         },
         {
           "serial": "XXXXXXXXXXX",
@@ -74,6 +74,23 @@ Example `config.json` for one PS4 and 2 apps:
                     "name": "Fortnite"
                 }
             ]
+        }
+    ]
+}
+```
+
+Example `config.json` if your homebridge has multiple network interfaces. Specify which address to use for `ps4-waker`:
+
+
+```json
+{
+    "platform": "PS4WakerPlatform",
+    "name": "PS4Waker",
+    "accessories": [
+      {
+            "serial": "XXXXXXXXXXX",
+            "model": "CUH-7016B",
+            "bindAddress": "192.16.1.2"
         }
     ]
 }
