@@ -39,7 +39,7 @@ Example `config.json` to register 2 PS4
             "serial": "XXXXXXXXXXX",
             "model": "CUH-7016B",
             "ip": "192.168.0.20",
-            "credentials": ".ps4-pro-wake.credentials.json"  
+            "credentials": ".ps4-pro-wake.credentials.json"
         },
         {
           "serial": "XXXXXXXXXXX",
@@ -79,6 +79,23 @@ Example `config.json` for one PS4 and 2 apps:
 }
 ```
 
+Example `config.json` if your homebridge has multiple network interfaces. Specify which address to use for `ps4-waker`:
+
+
+```json
+{
+    "platform": "PS4WakerPlatform",
+    "name": "PS4Waker",
+    "accessories": [
+      {
+            "serial": "XXXXXXXXXXX",
+            "model": "CUH-7016B",
+            "bindAddress": "192.16.1.2"
+        }
+    ]
+}
+```
+
 ### Platform element
 *Required fields*
 * `platform`: Must always be **PS4WakerPlatform**
@@ -102,6 +119,7 @@ Example `config.json` for one PS4 and 2 apps:
 * `pollingInterval`: If set, poll the device each interval
 * `apps`: Contains all apps action that you want to trigger using HomeKit on your device. Adds a switch for each app with the given name. see **App element**
 * `timeout`: Timeout to access to your PS4. **Default: 5000ms**
+* `bindAddress`: IP to bind to if your host has multiple network interfaces
 
 ### Global element
 *Optional fields*
@@ -109,6 +127,7 @@ Example `config.json` for one PS4 and 2 apps:
 * `pollingInterval`: If set, poll the device each interval
 * `apps`: Contains all apps action that you want to trigger using HomeKit on all PS4 device. Adds a switch for each app with the given name. see **App element**
 * `timeout`: Timeout to access all PS4 on your network. **Default: 5000ms**
+* `bindAddress`: IP to bind to if your host has multiple network interfaces
 
  ### App element
  *Required fields*
